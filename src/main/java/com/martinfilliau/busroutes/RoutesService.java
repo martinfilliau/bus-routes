@@ -1,5 +1,6 @@
 package com.martinfilliau.busroutes;
 
+import com.martinfilliau.busroutes.cli.ImportOxBusRoutes;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.martinfilliau.busroutes.resources.RoutesResource;
 import com.martinfilliau.busroutes.services.NeoService;
@@ -15,6 +16,7 @@ public class RoutesService extends Service<MainConfig> {
     @Override
     public void initialize(Bootstrap<MainConfig> btstrp) {
         btstrp.setName("RoutesService");
+        btstrp.addCommand(new ImportOxBusRoutes());
     }
 
     @Override

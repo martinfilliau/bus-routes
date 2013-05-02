@@ -14,7 +14,15 @@ public class MainConfig extends Configuration {
     @JsonProperty
     private String neoPath = "test";
 
+    @NotEmpty
+    @JsonProperty
+    private String importOx = "data.json";
+
     public String getNeoPath() {
         return this.neoPath;
+    }
+    
+    public String getImportOx() {
+        return this.importOx;
     }
 }
