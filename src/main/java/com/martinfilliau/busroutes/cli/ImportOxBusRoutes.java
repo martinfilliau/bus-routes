@@ -9,6 +9,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -29,6 +31,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
 
     private static GraphDatabaseService service;
     private static Index<Node> nodeIndex;
+    private static ExecutionEngine engine;
     
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
@@ -38,6 +41,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     protected void run(Bootstrap<MainConfig> bootstrap, Namespace namespace, MainConfig configuration) throws Exception {
         service = new GraphDatabaseFactory().newEmbeddedDatabase(configuration.getNeoPath());
         nodeIndex = service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
+        engine = new ExecutionEngine(service);
         registerShutdownHook();
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject) parser.parse(new FileReader(configuration.getImportOx()));
@@ -72,12 +76,14 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         Long order;
         JSONObject stop;
         Node n;
+        String query;
         Transaction tx = service.beginTx();
         try {
             for (Object o : s) {
                 route = (JSONObject) o;
                 slug = (String) route.get("route");
                 stops = (JSONArray) route.get("stops");
+                Long previousId = null;
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
                     code = (String) stop.get(Stop.CODE);
@@ -92,6 +98,13 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                         nodeIndex.add(n, Stop.NAME, name);
                         LOGGER.info("Creating stop " + name);
                     }
+                    if(previousId != null) {
+                        query = "START a=node(" + previousId.toString() + "), b=node("
+                                + Long.toString(n.getId())+") CREATE UNIQUE a-[r:ROUTE]->b";
+                        engine.execute(query);
+                        LOGGER.info(query);
+                    }
+                    previousId = n.getId();
                 }
             }
             tx.success();
