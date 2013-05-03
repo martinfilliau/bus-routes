@@ -14,6 +14,8 @@ import javax.ws.rs.WebApplicationException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.helpers.collection.MapUtil;
 
 /**
  *
@@ -29,7 +31,7 @@ public class RoutesResource {
     
     public RoutesResource(GraphDatabaseService service) {
         this.service = service;
-        this.nodeIndex = service.index().forNodes("stops");
+        this.nodeIndex = service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
     }
     
     @GET
@@ -40,7 +42,7 @@ public class RoutesResource {
         if(code != null) {
             i = this.nodeIndex.get(Stop.CODE, code).iterator();
         } else if(name != null) {
-            i = this.nodeIndex.get(Stop.NAME, name).iterator();
+            i = this.nodeIndex.query(Stop.NAME, name).iterator();
         } else {
             throw new WebApplicationException(400);
         }
