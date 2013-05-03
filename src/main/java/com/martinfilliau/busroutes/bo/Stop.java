@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author martinfilliau
  */
 public class Stop {
+   
+    public final static String CODE = "code";
+    public final static String NAME = "name";
     
     @JsonProperty
     private String code;

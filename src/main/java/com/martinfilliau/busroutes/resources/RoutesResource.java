@@ -38,9 +38,9 @@ public class RoutesResource {
         List<Stop> stops = new ArrayList<Stop>();
         Iterator<Node> i;
         if(code != null) {
-            i = this.nodeIndex.get("code", code).iterator();
+            i = this.nodeIndex.get(Stop.CODE, code).iterator();
         } else if(name != null) {
-            i = this.nodeIndex.get("name", name).iterator();
+            i = this.nodeIndex.get(Stop.NAME, name).iterator();
         } else {
             throw new WebApplicationException(400);
         }
@@ -49,10 +49,10 @@ public class RoutesResource {
         while(i.hasNext()) {
             n = i.next();
             s = new Stop();
-            if(n.hasProperty("name")) {
-                s.setName((String)n.getProperty("name"));
+            if(n.hasProperty(Stop.NAME)) {
+                s.setName((String)n.getProperty(Stop.NAME));
             }
-            s.setCode((String)n.getProperty("code"));
+            s.setCode((String)n.getProperty(Stop.CODE));
             stops.add(s);
         }
         return stops;

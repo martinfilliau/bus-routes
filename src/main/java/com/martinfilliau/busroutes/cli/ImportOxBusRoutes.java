@@ -1,5 +1,6 @@
 package com.martinfilliau.busroutes.cli;
 
+import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -77,16 +78,16 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                 stops = (JSONArray) route.get("stops");
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
-                    code = (String) stop.get("code");
-                    name = (String) stop.get("name");
+                    code = (String) stop.get(Stop.CODE);
+                    name = (String) stop.get(Stop.NAME);
                     order = (Long) stop.get("order");
-                    n = nodeIndex.get("code", code).getSingle();
+                    n = nodeIndex.get(Stop.CODE, code).getSingle();
                     if(n == null) {
                         n = service.createNode();
-                        n.setProperty("code", code);
-                        n.setProperty("nane", name);
-                        nodeIndex.add(n, "code", code);
-                        nodeIndex.add(n, "name", name);
+                        n.setProperty(Stop.CODE, code);
+                        n.setProperty(Stop.NAME, name);
+                        nodeIndex.add(n, Stop.CODE, code);
+                        nodeIndex.add(n, Stop.NAME, name);
                         LOGGER.info("Creating stop " + name);
                     }
                 }
