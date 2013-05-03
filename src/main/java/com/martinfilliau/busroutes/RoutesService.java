@@ -2,6 +2,7 @@ package com.martinfilliau.busroutes;
 
 import com.martinfilliau.busroutes.cli.ImportOxBusRoutes;
 import com.martinfilliau.busroutes.config.MainConfig;
+import com.martinfilliau.busroutes.health.NeoHealth;
 import com.martinfilliau.busroutes.resources.RoutesResource;
 import com.martinfilliau.busroutes.services.NeoService;
 import com.yammer.dropwizard.Service;
@@ -24,6 +25,7 @@ public class RoutesService extends Service<MainConfig> {
         final GraphDatabaseService service = new GraphDatabaseFactory()
                 .newEmbeddedDatabase(t.getNeoPath());
         
+        e.addHealthCheck(new NeoHealth(service));
         e.manage(new NeoService(service));
         e.addResource(new RoutesResource(service));
     }
