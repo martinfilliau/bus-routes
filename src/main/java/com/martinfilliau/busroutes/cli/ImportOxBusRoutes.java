@@ -84,11 +84,11 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     if(n == null) {
                         n = service.createNode();
                         n.setProperty("code", code);
+                        n.setProperty("nane", name);
                         nodeIndex.add(n, "code", code);
+                        nodeIndex.add(n, "name", name);
                         LOGGER.info("Creating stop " + name);
                     }
-                    n.setProperty("code", code);
-                    n.setProperty("name", name);
                 }
             }
             tx.success();
