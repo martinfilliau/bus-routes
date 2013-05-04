@@ -10,6 +10,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Direction;
@@ -40,6 +41,9 @@ public class RoutesResource {
     public String searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
         Node s = this.graph.getStop(start);
         Node e = this.graph.getStop(end);
+        if (s == null || e == null) {
+            throw new WebApplicationException(400);
+        }
         PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(RelTypes.ROUTE, Direction.OUTGOING), 100);
         Iterable<org.neo4j.graphdb.Path> paths = finder.findAllPaths(s, e);
         PathPrinter printer = new PathPrinter("name");
