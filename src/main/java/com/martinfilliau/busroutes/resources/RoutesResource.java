@@ -2,6 +2,7 @@ package com.martinfilliau.busroutes.resources;
 
 import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Stop;
+import com.martinfilliau.busroutes.graph.GraphService;
 import com.martinfilliau.busroutes.graph.PathPrinter;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -28,19 +29,17 @@ import org.neo4j.kernel.Traversal;
 @Consumes(MediaType.APPLICATION_JSON)
 public class RoutesResource {
 
-    private final GraphDatabaseService service;
-    private final Index<Node> nodeIndex;
+    private final GraphService graph;
 
     public RoutesResource(GraphDatabaseService service) {
-        this.service = service;
-        this.nodeIndex = service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
+        this.graph = new GraphService(service);
     }
 
     @GET
     @Path("search")
     public String searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
-        Node s = this.nodeIndex.get(Stop.CODE, start).getSingle();
-        Node e = this.nodeIndex.get(Stop.CODE, end).getSingle();
+        Node s = this.graph.getStop(start);
+        Node e = this.graph.getStop(end);
         PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(RelTypes.ROUTE, Direction.OUTGOING), 100);
         Iterable<org.neo4j.graphdb.Path> paths = finder.findAllPaths(s, e);
         PathPrinter printer = new PathPrinter("name");
