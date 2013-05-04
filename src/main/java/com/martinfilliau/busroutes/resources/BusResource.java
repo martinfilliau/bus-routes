@@ -1,6 +1,7 @@
 package com.martinfilliau.busroutes.resources;
 
 import com.martinfilliau.busroutes.bo.Stop;
+import com.martinfilliau.busroutes.graph.GraphService;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,9 +14,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexManager;
-import org.neo4j.helpers.collection.MapUtil;
 
 /**
  *
@@ -26,13 +24,10 @@ import org.neo4j.helpers.collection.MapUtil;
 @Consumes(MediaType.APPLICATION_JSON)
 public class BusResource {
  
-    
-    private final GraphDatabaseService service;
-    private final Index<Node> nodeIndex;
+    private final GraphService graph;
 
     public BusResource(GraphDatabaseService service) {
-        this.service = service;
-        this.nodeIndex = service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
+        this.graph = new GraphService(service);
     }
     
     @GET
@@ -41,9 +36,9 @@ public class BusResource {
         List<Stop> stops = new ArrayList<Stop>();
         Iterator<Node> i;
         if (code != null) {
-            i = this.nodeIndex.get(Stop.CODE, code).iterator();
+            i = this.graph.getStopsByCode(code);
         } else if (name != null) {
-            i = this.nodeIndex.query(Stop.NAME, name).iterator();
+            i = this.graph.searchStopsByName(name);
         } else {
             throw new WebApplicationException(400);
         }

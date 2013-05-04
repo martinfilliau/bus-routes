@@ -1,7 +1,6 @@
 package com.martinfilliau.busroutes.resources;
 
 import com.martinfilliau.busroutes.bo.RelTypes;
-import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.graph.GraphService;
 import com.martinfilliau.busroutes.graph.PathPrinter;
 import javax.ws.rs.Consumes;
@@ -16,9 +15,6 @@ import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexManager;
-import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.kernel.Traversal;
 
 /**

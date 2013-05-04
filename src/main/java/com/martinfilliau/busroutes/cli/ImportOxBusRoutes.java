@@ -1,6 +1,5 @@
 package com.martinfilliau.busroutes.cli;
 
-import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.martinfilliau.busroutes.graph.GraphService;
@@ -12,15 +11,10 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexManager;
-import org.neo4j.helpers.collection.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

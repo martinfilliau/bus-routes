@@ -1,6 +1,7 @@
 package com.martinfilliau.busroutes.graph;
 
 import com.martinfilliau.busroutes.bo.Stop;
+import java.util.Iterator;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
@@ -36,5 +37,13 @@ public class GraphService {
             nodeIndex.add(n, Stop.NAME, name);
         }
         return n;
+    }
+    
+    public Iterator<Node> getStopsByCode(String code) {
+        return this.nodeIndex.get(Stop.CODE, code).iterator();
+    }
+    
+    public Iterator<Node> searchStopsByName(String name) {
+        return this.nodeIndex.query(Stop.NAME, name).iterator();
     }
 }
