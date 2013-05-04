@@ -44,29 +44,27 @@ public class StopOnRoute {
     public Node getUnderlyingNode() {
         return this.node;
     }
-
+    
     @JsonProperty
-    public String getStopCode() {
-        return (String) node.getProperty(Stop.STOP_CODE);
+    public Stop getStop() {
+        Stop s = new Stop();
+        s.setName((String) this.node.getProperty(Stop.STOP_NAME));
+        s.setCode((String) this.node.getProperty(Stop.STOP_CODE));
+        return s;
     }
-
+    
     @JsonProperty
-    public String getStopName() {
-        return (String) node.getProperty(Stop.STOP_NAME);
+    public Route getRoute() {
+        Route r = new Route();
+        r.setId((String) this.node.getProperty(Route.ROUTE_ID));
+        r.setName((String) this.node.getProperty(Route.ROUTE_NAME));
+        r.setOperator((String) this.node.getProperty(Route.ROUTE_OPERATOR));
+        r.setSlug((String) this.node.getProperty(Route.ROUTE_SLUG));
+        return r;
     }
-
+    
     @JsonProperty
-    public String getRouteName() {
-        return (String) node.getProperty(Route.ROUTE_NAME);
-    }
-
-    @JsonProperty
-    public String getRouteSlug() {
-        return (String) node.getProperty(Route.ROUTE_ID);
-    }
-
-    @JsonProperty
-    public String getRouteOperator() {
-        return (String) node.getProperty(Route.ROUTE_OPERATOR);
+    public String getUniqueId() {
+        return (String) this.node.getProperty(StopOnRoute.UUID);
     }
 }
