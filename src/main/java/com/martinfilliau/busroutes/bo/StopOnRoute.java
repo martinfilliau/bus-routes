@@ -11,12 +11,8 @@ import org.neo4j.graphdb.index.Index;
  */
 public class StopOnRoute {
 
-    public final static String STOP_CODE = "stopCode";
-    public final static String STOP_NAME = "stopName";
-    public final static String ROUTE_NAME = "routeName";
-    public final static String ROUTE_ID = "routeId";
-    public final static String ROUTE_SLUG = "routeSlug";
-    public final static String ROUTE_OPERATOR = "routeOperator";
+    public final static String UUID = "uniqueId";
+
     private Node node;
 
     public StopOnRoute() {
@@ -26,19 +22,22 @@ public class StopOnRoute {
         this.node = n;
     }
     
-    public void setNodeProperties(String code, String name, Route route, Index<Node> index) {
-        this.node.setProperty(StopOnRoute.STOP_CODE, code);
-        this.node.setProperty(StopOnRoute.STOP_NAME, name);
-        this.node.setProperty(StopOnRoute.ROUTE_NAME, route.getName());
-        this.node.setProperty(StopOnRoute.ROUTE_ID, route.getId());
-        this.node.setProperty(StopOnRoute.ROUTE_SLUG, route.getSlug());
-        this.node.setProperty(StopOnRoute.ROUTE_OPERATOR, route.getOperator());
-        index.add(this.node, StopOnRoute.STOP_CODE, code);
-        index.add(this.node, StopOnRoute.STOP_NAME, name);
-        index.add(this.node, StopOnRoute.ROUTE_ID, route.getId());
-        index.add(this.node, StopOnRoute.ROUTE_NAME, route.getName());
-        index.add(this.node, StopOnRoute.ROUTE_OPERATOR, route.getOperator());
-        index.add(this.node, StopOnRoute.ROUTE_SLUG, route.getSlug());
+    public void setNodeProperties(Stop stop, Route route, Index<Node> index) {
+        String uniqueId = route.getSlug() + "/" + stop.getCode();
+        this.node.setProperty(Stop.STOP_CODE, stop.getCode());
+        this.node.setProperty(Stop.STOP_NAME, stop.getName());
+        this.node.setProperty(Route.ROUTE_NAME, route.getName());
+        this.node.setProperty(Route.ROUTE_ID, route.getId());
+        this.node.setProperty(Route.ROUTE_SLUG, route.getSlug());
+        this.node.setProperty(Route.ROUTE_OPERATOR, route.getOperator());
+        this.node.setProperty(StopOnRoute.UUID, uniqueId);
+        index.add(this.node, Stop.STOP_CODE, stop.getCode());
+        index.add(this.node, Stop.STOP_NAME, stop.getName());
+        index.add(this.node, Route.ROUTE_ID, route.getId());
+        index.add(this.node, Route.ROUTE_NAME, route.getName());
+        index.add(this.node, Route.ROUTE_OPERATOR, route.getOperator());
+        index.add(this.node, Route.ROUTE_SLUG, route.getSlug());
+        index.add(this.node, StopOnRoute.UUID, uniqueId);
     }
     
     @JsonIgnore
@@ -48,26 +47,26 @@ public class StopOnRoute {
 
     @JsonProperty
     public String getStopCode() {
-        return (String) node.getProperty(StopOnRoute.STOP_CODE);
+        return (String) node.getProperty(Stop.STOP_CODE);
     }
 
     @JsonProperty
     public String getStopName() {
-        return (String) node.getProperty(StopOnRoute.STOP_NAME);
+        return (String) node.getProperty(Stop.STOP_NAME);
     }
 
     @JsonProperty
     public String getRouteName() {
-        return (String) node.getProperty(StopOnRoute.ROUTE_NAME);
+        return (String) node.getProperty(Route.ROUTE_NAME);
     }
 
     @JsonProperty
     public String getRouteSlug() {
-        return (String) node.getProperty(StopOnRoute.ROUTE_ID);
+        return (String) node.getProperty(Route.ROUTE_ID);
     }
 
     @JsonProperty
     public String getRouteOperator() {
-        return (String) node.getProperty(StopOnRoute.ROUTE_OPERATOR);
+        return (String) node.getProperty(Route.ROUTE_OPERATOR);
     }
 }

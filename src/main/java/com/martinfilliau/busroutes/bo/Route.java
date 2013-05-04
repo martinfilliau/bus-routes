@@ -8,6 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Route {
     
+    public final static String ROUTE_NAME = "routeName";
+    public final static String ROUTE_ID = "routeId";
+    public final static String ROUTE_SLUG = "routeSlug";
+    public final static String ROUTE_OPERATOR = "routeOperator";
+    
     @JsonProperty
     private String name;
     

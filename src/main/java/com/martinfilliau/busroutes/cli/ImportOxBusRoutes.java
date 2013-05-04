@@ -1,6 +1,7 @@
 package com.martinfilliau.busroutes.cli;
 
 import com.martinfilliau.busroutes.bo.Route;
+import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.bo.StopOnRoute;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.martinfilliau.busroutes.graph.GraphService;
@@ -70,14 +71,12 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         JSONArray stops;
         JSONObject route;
         String slug;
-        String code;
-        String name;
         JSONObject stop;
         Node n;
-        String query;
         Long previousId;
         Route currentRoute;
         StopOnRoute stopOnRoute;
+        Stop st;
         Transaction tx = service.beginTx();
         try {
             for (Object o : s) {
@@ -88,12 +87,13 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                 previousId = null;
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
-                    code = (String) stop.get("code");
-                    name = (String) stop.get("name");
+                    st = new Stop();
+                    st.setCode((String) stop.get("code"));
+                    st.setName((String) stop.get("name"));
                     
                     n = graph.createNode();
                     stopOnRoute = new StopOnRoute(n);
-                    stopOnRoute.setNodeProperties(code, name, currentRoute, graph.getIndex());
+                    stopOnRoute.setNodeProperties(st, currentRoute, graph.getIndex());
                     if(previousId != null) {
                         graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
                     }

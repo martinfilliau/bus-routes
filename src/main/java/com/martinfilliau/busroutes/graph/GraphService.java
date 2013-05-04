@@ -1,6 +1,7 @@
 package com.martinfilliau.busroutes.graph;
 
 import com.martinfilliau.busroutes.bo.RelTypes;
+import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.bo.StopOnRoute;
 import java.util.Iterator;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -40,28 +41,10 @@ public class GraphService {
      * @param code
      * @return Node or null if not found
      */
-    public Node getStop(String code) {
-        return this.nodeIndex.get(StopOnRoute.STOP_CODE, code).getSingle();
+    public Node getStop(String uid) {
+        return this.nodeIndex.get(StopOnRoute.UUID, uid).getSingle();
     }
     
-    /**
-     * Get or create a stop
-     * Tries to get a stop by its code
-     * @param code of the stop
-     * @param name of the stop
-     * @return Node
-     */
-    public Node getOrCreateStop(String code, String name) {
-        Node n = this.getStop(code);
-        if (n == null) {
-            n = this.service.createNode();
-            n.setProperty(StopOnRoute.STOP_CODE, code);
-            n.setProperty(StopOnRoute.STOP_NAME, name);
-            nodeIndex.add(n, StopOnRoute.STOP_CODE, code);
-            nodeIndex.add(n, StopOnRoute.STOP_NAME, name);
-        }
-        return n;
-    }
     
     public Node createNode() {
         return this.service.createNode();
@@ -90,7 +73,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> getStopsByCode(String code) {
-        return this.nodeIndex.get(StopOnRoute.STOP_CODE, code).iterator();
+        return this.nodeIndex.get(Stop.STOP_CODE, code).iterator();
     }
     
     /**
@@ -99,7 +82,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> searchStopsByName(String name) {
-        return this.nodeIndex.query(StopOnRoute.STOP_NAME, name).iterator();
+        return this.nodeIndex.query(Stop.STOP_NAME, name).iterator();
     }
     
     /**
