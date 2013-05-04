@@ -43,15 +43,9 @@ public class BusResource {
             throw new WebApplicationException(400);
         }
         Node n;
-        Stop s;
         while (i.hasNext()) {
             n = i.next();
-            s = new Stop();
-            if (n.hasProperty(Stop.NAME)) {
-                s.setName((String) n.getProperty(Stop.NAME));
-            }
-            s.setCode((String) n.getProperty(Stop.CODE));
-            stops.add(s);
+            stops.add(new Stop(n));
         }
         return stops;
     }

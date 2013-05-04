@@ -1,6 +1,7 @@
 package com.martinfilliau.busroutes.bo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.neo4j.graphdb.Node;
 
 /**
  *
@@ -10,6 +11,15 @@ public class Stop {
    
     public final static String CODE = "code";
     public final static String NAME = "name";
+    
+    public Stop() {
+        
+    }
+    
+    public Stop(Node n) {
+        this.name = (String) n.getProperty(Stop.NAME);
+        this.code = (String) n.getProperty(Stop.CODE);
+    }
     
     @JsonProperty
     private String code;
