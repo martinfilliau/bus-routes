@@ -1,6 +1,5 @@
 package com.martinfilliau.busroutes.resources;
 
-import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.graph.GraphService;
 import com.martinfilliau.busroutes.graph.PathPrinter;
 import javax.ws.rs.Consumes;
@@ -10,9 +9,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import org.neo4j.graphalgo.GraphAlgoFactory;
-import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.kernel.Traversal;
@@ -40,8 +36,7 @@ public class RoutesResource {
         if (s == null || e == null) {
             throw new WebApplicationException(400);
         }
-        PathFinder<org.neo4j.graphdb.Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(RelTypes.ROUTE, Direction.OUTGOING), 100);
-        Iterable<org.neo4j.graphdb.Path> paths = finder.findAllPaths(s, e);
+        Iterable<org.neo4j.graphdb.Path> paths = this.graph.getRoutes(s, e);
         PathPrinter printer = new PathPrinter("name");
         StringBuilder sb = new StringBuilder();
         for (org.neo4j.graphdb.Path p : paths) {
