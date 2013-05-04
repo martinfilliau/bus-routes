@@ -27,7 +27,7 @@ import org.neo4j.kernel.Traversal;
  *
  * @author martinfilliau
  */
-@Path("/routes")
+@Path("/route")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class RoutesResource {
@@ -42,32 +42,6 @@ public class RoutesResource {
 
     @GET
     @Path("search")
-    public List<Stop> searchStops(@QueryParam("code") String code, @QueryParam("name") String name) {
-        List<Stop> stops = new ArrayList<Stop>();
-        Iterator<Node> i;
-        if (code != null) {
-            i = this.nodeIndex.get(Stop.CODE, code).iterator();
-        } else if (name != null) {
-            i = this.nodeIndex.query(Stop.NAME, name).iterator();
-        } else {
-            throw new WebApplicationException(400);
-        }
-        Node n;
-        Stop s;
-        while (i.hasNext()) {
-            n = i.next();
-            s = new Stop();
-            if (n.hasProperty(Stop.NAME)) {
-                s.setName((String) n.getProperty(Stop.NAME));
-            }
-            s.setCode((String) n.getProperty(Stop.CODE));
-            stops.add(s);
-        }
-        return stops;
-    }
-
-    @GET
-    @Path("routes")
     public String searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
         Node s = this.nodeIndex.get(Stop.CODE, start).getSingle();
         Node e = this.nodeIndex.get(Stop.CODE, end).getSingle();
