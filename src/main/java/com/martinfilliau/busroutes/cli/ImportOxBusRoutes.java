@@ -77,13 +77,14 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         JSONObject stop;
         Node n;
         String query;
+        Long previousId;
         Transaction tx = service.beginTx();
         try {
             for (Object o : s) {
                 route = (JSONObject) o;
                 slug = (String) route.get("route");
                 stops = (JSONArray) route.get("stops");
-                Long previousId = null;
+                previousId = null;
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
                     code = (String) stop.get(Stop.CODE);
