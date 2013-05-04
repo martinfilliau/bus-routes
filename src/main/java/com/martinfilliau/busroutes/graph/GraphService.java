@@ -3,6 +3,7 @@ package com.martinfilliau.busroutes.graph;
 import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Stop;
 import java.util.Iterator;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Direction;
@@ -22,11 +23,12 @@ public class GraphService {
 
     private GraphDatabaseService service;
     private Index<Node> nodeIndex;
+    private ExecutionEngine engine;
 
     public GraphService(GraphDatabaseService service) {
         this.service = service;
         this.nodeIndex = this.service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
-
+        this.engine = new ExecutionEngine(service);
     }
 
     /**
@@ -55,6 +57,18 @@ public class GraphService {
             nodeIndex.add(n, Stop.NAME, name);
         }
         return n;
+    }
+    
+    public void addRelation(String nodeStart, String nodeEnd, String relName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("START a=node(")
+                .append(nodeStart)
+                .append("), b=node(")
+                .append(nodeEnd)
+                .append(") CREATE UNIQUE a-[r:")
+                .append(relName)
+                .append("]->b");
+        this.engine.execute(sb.toString());
     }
     
     /**

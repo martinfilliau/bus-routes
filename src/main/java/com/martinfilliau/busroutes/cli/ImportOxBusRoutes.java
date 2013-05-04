@@ -10,7 +10,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -27,7 +26,6 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImportOxBusRoutes.class);
 
     private static GraphDatabaseService service;
-    private static ExecutionEngine engine;
     private GraphService graph;
     
     public ImportOxBusRoutes() {
@@ -37,7 +35,6 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     @Override
     protected void run(Bootstrap<MainConfig> bootstrap, Namespace namespace, MainConfig configuration) throws Exception {
         service = new GraphDatabaseFactory().newEmbeddedDatabase(configuration.getNeoPath());
-        engine = new ExecutionEngine(service);
         graph = new GraphService(service);
         registerShutdownHook();
         JSONParser parser = new JSONParser();
@@ -87,10 +84,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     name = (String) stop.get(Stop.NAME);
                     n = graph.getOrCreateStop(code, name);
                     if(previousId != null) {
-                        query = "START a=node(" + previousId.toString() + "), b=node("
-                                + Long.toString(n.getId())+") CREATE UNIQUE a-[r:ROUTE]->b";
-                        engine.execute(query);
-                        LOGGER.info(query);
+                        graph.addRelation(previousId.toString(), Long.toString(n.getId()), "ROUTE");
                     }
                     previousId = n.getId();
                 }
