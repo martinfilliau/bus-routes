@@ -1,11 +1,13 @@
 package com.martinfilliau.busroutes.cli;
 
-import com.martinfilliau.busroutes.bo.Stop;
+import com.martinfilliau.busroutes.bo.Route;
+import com.martinfilliau.busroutes.bo.StopOnRoute;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.martinfilliau.busroutes.graph.GraphService;
 import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
 import java.io.FileReader;
+import java.util.HashMap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,6 +30,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     private static GraphDatabaseService service;
     private GraphService graph;
     
+    private HashMap<String, Route> routesAvailable = new HashMap<String, Route>();
+    
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
     }
@@ -47,16 +51,17 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
 
     private void doRoutes(JSONArray routes) {
         JSONObject route;
-        String name;
-        String route_id;
-        String operator;
+        Route r;
         String slug;
         for (Object o : routes) {
             route = (JSONObject) o;
-            name = (String) route.get("name");
-            route_id = (String) route.get("id");
-            operator = (String) route.get("operator");
             slug = (String) route.get("slug");
+            r = new Route();
+            r.setName((String) route.get("name"));
+            r.setId((String) route.get("id"));
+            r.setOperator((String) route.get("operator"));
+            r.setSlug(slug);
+            routesAvailable.put(slug, r);
             LOGGER.info("Found route " + slug);
         }
     }
@@ -71,21 +76,26 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         Node n;
         String query;
         Long previousId;
+        Route currentRoute;
+        StopOnRoute stopOnRoute;
         Transaction tx = service.beginTx();
         try {
             for (Object o : s) {
                 route = (JSONObject) o;
                 slug = (String) route.get("route");
+                currentRoute = routesAvailable.get(slug);
                 stops = (JSONArray) route.get("stops");
                 previousId = null;
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
-                    code = (String) stop.get(Stop.CODE);
-                    name = (String) stop.get(Stop.NAME);
-                    n = graph.getOrCreateStop(code, name);
+                    code = (String) stop.get("code");
+                    name = (String) stop.get("name");
+                    
+                    n = graph.createNode();
+                    stopOnRoute = new StopOnRoute(n);
+                    stopOnRoute.setNodeProperties(code, name, currentRoute, graph.getIndex());
                     if(previousId != null) {
-                        graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()),
-                                slug.replace("-", "").replace(":", ""));
+                        graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
                     }
                     previousId = n.getId();
                 }

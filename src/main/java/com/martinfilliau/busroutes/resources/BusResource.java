@@ -1,6 +1,6 @@
 package com.martinfilliau.busroutes.resources;
 
-import com.martinfilliau.busroutes.bo.Stop;
+import com.martinfilliau.busroutes.bo.StopOnRoute;
 import com.martinfilliau.busroutes.graph.GraphService;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,8 +32,8 @@ public class BusResource {
     
     @GET
     @Path("search")
-    public List<Stop> searchStops(@QueryParam("code") String code, @QueryParam("name") String name) {
-        List<Stop> stops = new ArrayList<Stop>();
+    public List<StopOnRoute> searchStops(@QueryParam("code") String code, @QueryParam("name") String name) {
+        List<StopOnRoute> stops = new ArrayList<StopOnRoute>();
         Iterator<Node> i;
         if (code != null) {
             i = this.graph.getStopsByCode(code);
@@ -45,7 +45,7 @@ public class BusResource {
         Node n;
         while (i.hasNext()) {
             n = i.next();
-            stops.add(new Stop(n));
+            stops.add(new StopOnRoute(n));
         }
         return stops;
     }

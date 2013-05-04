@@ -1,7 +1,7 @@
 package com.martinfilliau.busroutes.graph;
 
 import com.martinfilliau.busroutes.bo.RelTypes;
-import com.martinfilliau.busroutes.bo.Stop;
+import com.martinfilliau.busroutes.bo.StopOnRoute;
 import java.util.Iterator;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphalgo.GraphAlgoFactory;
@@ -41,7 +41,7 @@ public class GraphService {
      * @return Node or null if not found
      */
     public Node getStop(String code) {
-        return this.nodeIndex.get(Stop.CODE, code).getSingle();
+        return this.nodeIndex.get(StopOnRoute.STOP_CODE, code).getSingle();
     }
     
     /**
@@ -55,15 +55,23 @@ public class GraphService {
         Node n = this.getStop(code);
         if (n == null) {
             n = this.service.createNode();
-            n.setProperty(Stop.CODE, code);
-            n.setProperty(Stop.NAME, name);
-            nodeIndex.add(n, Stop.CODE, code);
-            nodeIndex.add(n, Stop.NAME, name);
+            n.setProperty(StopOnRoute.STOP_CODE, code);
+            n.setProperty(StopOnRoute.STOP_NAME, name);
+            nodeIndex.add(n, StopOnRoute.STOP_CODE, code);
+            nodeIndex.add(n, StopOnRoute.STOP_NAME, name);
         }
         return n;
     }
     
-    public void addRouteRelation(String nodeStart, String nodeEnd, String route) {
+    public Node createNode() {
+        return this.service.createNode();
+    }
+    
+    public Index<Node> getIndex() {
+        return this.nodeIndex;
+    }
+    
+    public void addRouteRelation(String nodeStart, String nodeEnd) {
         StringBuilder sb = new StringBuilder();
         sb.append("START a=node(")
                 .append(nodeStart)
@@ -71,9 +79,7 @@ public class GraphService {
                 .append(nodeEnd)
                 .append(") CREATE UNIQUE a-[r:")
                 .append(RelTypes.ROUTE.name())
-                .append("]->b SET r.")
-                .append(route)
-                .append(" = 'yes'");
+                .append("]->b");
         LOGGER.info("Query: " + sb.toString());
         this.engine.execute(sb.toString());
     }
@@ -84,7 +90,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> getStopsByCode(String code) {
-        return this.nodeIndex.get(Stop.CODE, code).iterator();
+        return this.nodeIndex.get(StopOnRoute.STOP_CODE, code).iterator();
     }
     
     /**
@@ -93,7 +99,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> searchStopsByName(String name) {
-        return this.nodeIndex.query(Stop.NAME, name).iterator();
+        return this.nodeIndex.query(StopOnRoute.STOP_NAME, name).iterator();
     }
     
     /**
