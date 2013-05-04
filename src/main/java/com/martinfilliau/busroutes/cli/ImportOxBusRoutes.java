@@ -1,7 +1,9 @@
 package com.martinfilliau.busroutes.cli;
 
+import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.config.MainConfig;
+import com.martinfilliau.busroutes.graph.GraphService;
 import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
 import java.io.FileReader;
@@ -13,6 +15,7 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.index.Index;
@@ -30,8 +33,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImportOxBusRoutes.class);
 
     private static GraphDatabaseService service;
-    private static Index<Node> nodeIndex;
     private static ExecutionEngine engine;
+    private GraphService graph;
     
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
@@ -40,8 +43,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     @Override
     protected void run(Bootstrap<MainConfig> bootstrap, Namespace namespace, MainConfig configuration) throws Exception {
         service = new GraphDatabaseFactory().newEmbeddedDatabase(configuration.getNeoPath());
-        nodeIndex = service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
         engine = new ExecutionEngine(service);
+        graph = new GraphService(service);
         registerShutdownHook();
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject) parser.parse(new FileReader(configuration.getImportOx()));
@@ -73,7 +76,6 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         String slug;
         String code;
         String name;
-        Long order;
         JSONObject stop;
         Node n;
         String query;
@@ -89,16 +91,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     stop = (JSONObject) obj;
                     code = (String) stop.get(Stop.CODE);
                     name = (String) stop.get(Stop.NAME);
-                    order = (Long) stop.get("order");
-                    n = nodeIndex.get(Stop.CODE, code).getSingle();
-                    if(n == null) {
-                        n = service.createNode();
-                        n.setProperty(Stop.CODE, code);
-                        n.setProperty(Stop.NAME, name);
-                        nodeIndex.add(n, Stop.CODE, code);
-                        nodeIndex.add(n, Stop.NAME, name);
-                        LOGGER.info("Creating stop " + name);
-                    }
+                    n = graph.getOrCreateStop(code, name);
                     if(previousId != null) {
                         query = "START a=node(" + previousId.toString() + "), b=node("
                                 + Long.toString(n.getId())+") CREATE UNIQUE a-[r:ROUTE]->b";
