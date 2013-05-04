@@ -14,12 +14,16 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
 import org.neo4j.kernel.Traversal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author martinfilliau
  */
 public class GraphService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphService.class);
 
     private GraphDatabaseService service;
     private Index<Node> nodeIndex;
@@ -69,6 +73,7 @@ public class GraphService {
                 .append(relName)
                 .append("]->b");
         this.engine.execute(sb.toString());
+        LOGGER.info("Query: " + sb.toString());
     }
     
     /**
