@@ -63,17 +63,19 @@ public class GraphService {
         return n;
     }
     
-    public void addRelation(String nodeStart, String nodeEnd, String relName) {
+    public void addRouteRelation(String nodeStart, String nodeEnd, String route) {
         StringBuilder sb = new StringBuilder();
         sb.append("START a=node(")
                 .append(nodeStart)
                 .append("), b=node(")
                 .append(nodeEnd)
                 .append(") CREATE UNIQUE a-[r:")
-                .append(relName)
-                .append("]->b");
-        this.engine.execute(sb.toString());
+                .append(RelTypes.ROUTE.name())
+                .append("]->b SET r.")
+                .append(route)
+                .append(" = 'yes'");
         LOGGER.info("Query: " + sb.toString());
+        this.engine.execute(sb.toString());
     }
     
     /**
@@ -101,7 +103,7 @@ public class GraphService {
      * @return Iterable<Path>
      */
     public Iterable<Path> getRoutes(Node start, Node end) {
-        PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForTypes(RelTypes.ROUTE, Direction.OUTGOING), 100);
+        PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForAllTypes(Direction.OUTGOING), 100);
         return finder.findAllPaths(start, end);
     }
 }

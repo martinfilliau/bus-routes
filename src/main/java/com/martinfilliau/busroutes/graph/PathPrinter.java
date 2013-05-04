@@ -1,5 +1,6 @@
 package com.martinfilliau.busroutes.graph;
 
+import java.util.Iterator;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.kernel.Traversal;
@@ -19,7 +20,7 @@ public class PathPrinter implements Traversal.PathDescriptor<Path> {
 
     @Override
     public String nodeRepresentation(org.neo4j.graphdb.Path path, Node node) {
-        return "(" + node.getProperty(nodePropertyKey, "") + ")";
+        return "(" + node.getProperty(nodePropertyKey, "") + " " + node.getProperty("code") + ")";
     }
 
     @Override
@@ -31,6 +32,12 @@ public class PathPrinter implements Traversal.PathDescriptor<Path> {
         } else {
             suffix = "-->";
         }
-        return prefix + "[" + relationship.getType().name() + "]" + suffix;
+        StringBuilder routes = new StringBuilder();
+        Iterator<String> i = relationship.getPropertyKeys().iterator();
+        while(i.hasNext()) {
+            routes.append(i.next()).append(" ");
+        }
+        //return prefix + "[" + relationship.getType().name() + "]" + suffix;
+        return prefix + "[" + routes.toString() + "]" + suffix;
     }
 }

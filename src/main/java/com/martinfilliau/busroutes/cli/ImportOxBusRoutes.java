@@ -84,7 +84,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     name = (String) stop.get(Stop.NAME);
                     n = graph.getOrCreateStop(code, name);
                     if(previousId != null) {
-                        graph.addRelation(previousId.toString(), Long.toString(n.getId()), "ROUTE");
+                        graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()),
+                                slug.replace("-", "").replace(":", ""));
                     }
                     previousId = n.getId();
                 }
