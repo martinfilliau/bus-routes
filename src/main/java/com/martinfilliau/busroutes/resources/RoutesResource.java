@@ -1,7 +1,7 @@
 package com.martinfilliau.busroutes.resources;
 
 import com.martinfilliau.busroutes.graph.GraphService;
-import com.martinfilliau.busroutes.graph.PathPrinter;
+import com.martinfilliau.busroutes.graph.RoutePathPrinter;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,7 +37,7 @@ public class RoutesResource {
             throw new WebApplicationException(400);
         }
         Iterable<org.neo4j.graphdb.Path> paths = this.graph.getRoutes(s, e);
-        PathPrinter printer = new PathPrinter("name");
+        RoutePathPrinter printer = new RoutePathPrinter();
         StringBuilder sb = new StringBuilder();
         for (org.neo4j.graphdb.Path p : paths) {
             sb.append(Traversal.pathToString(p, printer)).append("\n");
