@@ -1,2 +1,2 @@
 neoPath: 'neo-data'
-importOx: 'data.json'
+importOx: 'src/main/resources/oxontime-20130502.json'
