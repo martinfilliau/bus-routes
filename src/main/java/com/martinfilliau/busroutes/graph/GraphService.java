@@ -27,33 +27,54 @@ public class GraphService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphService.class);
 
     private GraphDatabaseService service;
-    private Index<Node> nodeIndex;
+    private Index<Node> stopsOnRouteIndex;
+    private Index<Node> stopsIndex;
     private ExecutionEngine engine;
 
     public GraphService(GraphDatabaseService service) {
         this.service = service;
-        this.nodeIndex = this.service.index().forNodes("stops", MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
+        this.stopsOnRouteIndex = this.service.index().forNodes("stopsonroute",
+                MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
+        this.stopsIndex = this.service.index().forNodes("stops",
+                MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext"));
         this.engine = new ExecutionEngine(service);
     }
 
     /**
-     * Get a stop by its code
-     * @param code
+     * Get a stop on route by its unique ID
+     * @param uid unique identifier of the stop on route
      * @return Node or null if not found
      */
-    public Node getStop(String uid) {
-        return this.nodeIndex.get(StopOnRoute.UUID, uid).getSingle();
+    public Node getStopOnRoute(String uid) {
+        return this.stopsOnRouteIndex.get(StopOnRoute.UUID, uid).getSingle();
     }
     
+    /**
+     * Get a stop by its code
+     * @param code unique identifier of the stop
+     * @return Node or null if not found
+     */
+    public Node getStop(String code) {
+        return this.stopsIndex.get(Stop.STOP_CODE, code).getSingle();
+    }
     
     public Node createNode() {
         return this.service.createNode();
     }
     
-    public Index<Node> getIndex() {
-        return this.nodeIndex;
+    public Index<Node> getStopsOnRouteIndex() {
+        return this.stopsOnRouteIndex;
     }
     
+    public Index<Node> getStopsIndex() {
+        return this.stopsIndex;
+    }
+    
+    /**
+     * Add a relation between two stops on route
+     * @param nodeStart UID of the start node
+     * @param nodeEnd UID of the end node
+     */
     public void addRouteRelation(String nodeStart, String nodeEnd) {
         StringBuilder sb = new StringBuilder();
         sb.append("START a=node(")
@@ -73,7 +94,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> getStopsByCode(String code) {
-        return this.nodeIndex.get(Stop.STOP_CODE, code).iterator();
+        return this.stopsOnRouteIndex.get(Stop.STOP_CODE, code).iterator();
     }
     
     /**
@@ -82,7 +103,7 @@ public class GraphService {
      * @return Iterator<Node>
      */
     public Iterator<Node> searchStopsByName(String name) {
-        return this.nodeIndex.query(Stop.STOP_NAME, name).iterator();
+        return this.stopsOnRouteIndex.query(Stop.STOP_NAME, name).iterator();
     }
     
     /**

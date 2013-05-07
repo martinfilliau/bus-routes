@@ -41,7 +41,7 @@ public class StopOnRoute {
     }
     
     @JsonIgnore
-    public Node getUnderlyingNode() {
+    public Node getNode() {
         return this.node;
     }
     

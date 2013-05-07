@@ -93,7 +93,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     
                     n = graph.createNode();
                     stopOnRoute = new StopOnRoute(n);
-                    stopOnRoute.setNodeProperties(st, currentRoute, graph.getIndex());
+                    stopOnRoute.setNodeProperties(st, currentRoute, graph.getStopsOnRouteIndex());
                     if(previousId != null) {
                         graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
                     }
