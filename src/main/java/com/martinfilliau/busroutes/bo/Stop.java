@@ -1,7 +1,9 @@
 package com.martinfilliau.busroutes.bo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 /**
  *
@@ -16,8 +18,26 @@ public class Stop {
     
     private String code;
     
-    private List<Route> routes;
+    private Node node;
+    
+    public Stop() {
+        
+    }
+    
+    public Stop(Node n) {
+        node = n;
+    }
+    
+    public void setNodeProperties(Stop stop, Index<Node> index) {
+        this.node.setProperty(STOP_NAME, stop.getName());
+        index.add(node, STOP_NAME, name);
+    }
 
+    @JsonIgnore
+    public Node getNode() {
+        return node;
+    }
+    
     @JsonProperty
     public String getName() {
         return name;
@@ -34,13 +54,5 @@ public class Stop {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public List<Route> getRoutes() {
-        return routes;
-    }
-
-    public void setRoutes(List<Route> routes) {
-        this.routes = routes;
     }
 }

@@ -15,7 +15,12 @@ public class RoutePathPrinter implements Traversal.PathDescriptor<Path> {
 
     @Override
     public String nodeRepresentation(org.neo4j.graphdb.Path path, Node node) {
-        return "(" + node.getProperty(Stop.STOP_NAME) + " " + node.getProperty(StopOnRoute.UUID) + ")";
+        if(node.hasProperty(StopOnRoute.UUID)) {
+            // it's a stop on route
+            return "(" + node.getProperty(Stop.STOP_NAME) + " " + node.getProperty(StopOnRoute.UUID) + ")";
+        } else {
+            return "(" + node.getProperty(Stop.STOP_NAME) + " " + node.getProperty(Stop.STOP_CODE) + ")";
+        }
     }
 
     @Override

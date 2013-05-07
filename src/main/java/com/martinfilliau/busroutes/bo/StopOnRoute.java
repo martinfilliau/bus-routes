@@ -23,21 +23,18 @@ public class StopOnRoute {
     }
     
     public void setNodeProperties(Stop stop, Route route, Index<Node> index) {
-        String uniqueId = buildUniqueId(route.getSlug(), stop.getCode());
         this.node.setProperty(Stop.STOP_CODE, stop.getCode());
         this.node.setProperty(Stop.STOP_NAME, stop.getName());
         this.node.setProperty(Route.ROUTE_NAME, route.getName());
         this.node.setProperty(Route.ROUTE_ID, route.getId());
         this.node.setProperty(Route.ROUTE_SLUG, route.getSlug());
         this.node.setProperty(Route.ROUTE_OPERATOR, route.getOperator());
-        this.node.setProperty(StopOnRoute.UUID, uniqueId);
         index.add(this.node, Stop.STOP_CODE, stop.getCode());
         index.add(this.node, Stop.STOP_NAME, stop.getName());
         index.add(this.node, Route.ROUTE_ID, route.getId());
         index.add(this.node, Route.ROUTE_NAME, route.getName());
         index.add(this.node, Route.ROUTE_OPERATOR, route.getOperator());
         index.add(this.node, Route.ROUTE_SLUG, route.getSlug());
-        index.add(this.node, StopOnRoute.UUID, uniqueId);
     }
     
     /**

@@ -44,6 +44,18 @@ public class GraphService {
         Node n = this.getStopOnRoute(uid);
         if (n == null) {
             n = this.createNode();
+            n.setProperty(StopOnRoute.UUID, uid);
+            this.stopsOnRouteIndex.add(n, StopOnRoute.UUID, uid);
+        }
+        return n;
+    }
+    
+    public Node getOrCreateStop(String code) {
+        Node n = this.getStop(code);
+        if (n == null) {
+            n = this.createNode();
+            n.setProperty(Stop.STOP_CODE, code);
+            this.stopsIndex.add(n, Stop.STOP_CODE, code);
         }
         return n;
     }
@@ -121,7 +133,7 @@ public class GraphService {
      * @return Iterable<Path>
      */
     public Iterable<Path> getRoutes(Node start, Node end) {
-        PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForAllTypes(Direction.OUTGOING), 100);
+        PathFinder<Path> finder = GraphAlgoFactory.shortestPath(Traversal.expanderForAllTypes(Direction.BOTH), 100);
         return finder.findAllPaths(start, end);
     }
 }

@@ -1,5 +1,6 @@
 package com.martinfilliau.busroutes.cli;
 
+import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Route;
 import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.bo.StopOnRoute;
@@ -9,6 +10,9 @@ import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -33,6 +37,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     
     private HashMap<String, Route> routesAvailable = new HashMap<String, Route>();
     
+    private HashMap<String, Set<String>> stopsAvailable = new HashMap<String, Set<String>>();
+    
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
     }
@@ -47,7 +53,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         JSONArray routes = (JSONArray) root.get("routes");
         JSONArray stops = (JSONArray) root.get("stops");
         doRoutes(routes);
-        doStops(stops);
+        doStopsOnRoutes(stops);
+        doStops();
     }
 
     private void doRoutes(JSONArray routes) {
@@ -67,16 +74,19 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         }
     }
 
-    private void doStops(JSONArray s) {
+    private void doStopsOnRoutes(JSONArray s) {
         JSONArray stops;
         JSONObject route;
         String slug;
         JSONObject stop;
         Node n;
+        String id;
         Long previousId;
         Route currentRoute;
         StopOnRoute stopOnRoute;
         Stop st;
+        String stopCode;
+        Node stopNode;
         Transaction tx = service.beginTx();
         try {
             for (Object o : s) {
@@ -87,11 +97,14 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                 previousId = null;
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
-                    st = new Stop();
-                    st.setCode((String) stop.get("code"));
+                    stopCode = (String) stop.get("code");
+                    stopNode = graph.getOrCreateStop(stopCode);
+                    st = new Stop(stopNode);
                     st.setName((String) stop.get("name"));
+                    st.setCode(stopCode);
+                    st.setNodeProperties(st, graph.getStopsIndex());
                     
-                    String id = StopOnRoute.buildUniqueId(slug, st.getCode());
+                    id = StopOnRoute.buildUniqueId(slug, st.getCode());
                     n = graph.getOrCreateStopOnRoute(id);
                     stopOnRoute = new StopOnRoute(n);
                     stopOnRoute.setNodeProperties(st, currentRoute, graph.getStopsOnRouteIndex());
@@ -99,6 +112,36 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                         graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
                     }
                     previousId = n.getId();
+                    
+                    if(stopsAvailable.containsKey(st.getCode())) {
+                        stopsAvailable.get(st.getCode()).add(id);
+                    } else {
+                        Set<String> stopOnRoutesSet = new HashSet<String>();
+                        stopOnRoutesSet.add(id);
+                        stopsAvailable.put(st.getCode(), stopOnRoutesSet);
+                    }
+                }
+            }
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Error in importing stops on routes", e);
+        } finally {
+            tx.finish();
+        }
+    }
+    
+    private void doStops() {
+        Node stop;
+        Node onRoute;
+        Set<String> stopOnRoutes;
+        Transaction tx = service.beginTx();
+        try {
+            for(Map.Entry<String, Set<String>> e : stopsAvailable.entrySet()) {
+                stop = this.graph.getStop(e.getKey());
+                stopOnRoutes = e.getValue();
+                for(String s : stopOnRoutes) {
+                    onRoute = this.graph.getStopOnRoute(s);
+                    stop.createRelationshipTo(onRoute, RelTypes.STOP);
                 }
             }
             tx.success();

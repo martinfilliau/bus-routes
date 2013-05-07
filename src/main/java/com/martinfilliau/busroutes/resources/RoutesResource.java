@@ -31,8 +31,8 @@ public class RoutesResource {
     @GET
     @Path("search")
     public String searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
-        Node s = this.graph.getStopOnRoute(start);
-        Node e = this.graph.getStopOnRoute(end);
+        Node s = this.graph.getStop(start);
+        Node e = this.graph.getStop(end);
         if (s == null || e == null) {
             throw new WebApplicationException(400);
         }
