@@ -55,4 +55,9 @@ public class Stop {
     public void setCode(String code) {
         this.code = code;
     }
+
+    @Override
+    public String toString() {
+        return this.name + " (" + this.code + ")";
+    }
 }

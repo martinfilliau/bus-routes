@@ -1,7 +1,10 @@
 package com.martinfilliau.busroutes.resources;
 
+import com.martinfilliau.busroutes.bo.PathRoute;
 import com.martinfilliau.busroutes.graph.GraphService;
 import com.martinfilliau.busroutes.graph.RoutePathPrinter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -30,7 +33,7 @@ public class RoutesResource {
 
     @GET
     @Path("search")
-    public String searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
+    public List<PathRoute> searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
         Node s = this.graph.getStop(start);
         Node e = this.graph.getStop(end);
         if (s == null || e == null) {
@@ -39,9 +42,11 @@ public class RoutesResource {
         Iterable<org.neo4j.graphdb.Path> paths = this.graph.getRoutes(s, e);
         RoutePathPrinter printer = new RoutePathPrinter();
         StringBuilder sb = new StringBuilder();
+        List<PathRoute> routes = new ArrayList<PathRoute>();
         for (org.neo4j.graphdb.Path p : paths) {
-            sb.append(Traversal.pathToString(p, printer)).append("\n");
+            routes.add(new PathRoute(p));
+            //sb.append(Traversal.pathToString(p, printer)).append("\n");
         }
-        return sb.toString();
+        return routes;
     }
 }
