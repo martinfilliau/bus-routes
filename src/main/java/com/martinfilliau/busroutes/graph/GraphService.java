@@ -40,6 +40,14 @@ public class GraphService {
         this.engine = new ExecutionEngine(service);
     }
 
+    public Node getOrCreateStopOnRoute(String uid) {
+        Node n = this.getStopOnRoute(uid);
+        if (n == null) {
+            n = this.createNode();
+        }
+        return n;
+    }
+    
     /**
      * Get a stop on route by its unique ID
      * @param uid unique identifier of the stop on route

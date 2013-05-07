@@ -91,7 +91,8 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     st.setCode((String) stop.get("code"));
                     st.setName((String) stop.get("name"));
                     
-                    n = graph.createNode();
+                    String id = StopOnRoute.buildUniqueId(slug, st.getCode());
+                    n = graph.getOrCreateStopOnRoute(id);
                     stopOnRoute = new StopOnRoute(n);
                     stopOnRoute.setNodeProperties(st, currentRoute, graph.getStopsOnRouteIndex());
                     if(previousId != null) {

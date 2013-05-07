@@ -23,7 +23,7 @@ public class StopOnRoute {
     }
     
     public void setNodeProperties(Stop stop, Route route, Index<Node> index) {
-        String uniqueId = route.getSlug() + "/" + stop.getCode();
+        String uniqueId = buildUniqueId(route.getSlug(), stop.getCode());
         this.node.setProperty(Stop.STOP_CODE, stop.getCode());
         this.node.setProperty(Stop.STOP_NAME, stop.getName());
         this.node.setProperty(Route.ROUTE_NAME, route.getName());
@@ -38,6 +38,17 @@ public class StopOnRoute {
         index.add(this.node, Route.ROUTE_OPERATOR, route.getOperator());
         index.add(this.node, Route.ROUTE_SLUG, route.getSlug());
         index.add(this.node, StopOnRoute.UUID, uniqueId);
+    }
+    
+    /**
+     * Build unique ID for this stop on route
+     * @param routeSlug unique identifier of the route
+     * @param stopCode unique identifier of the stop
+     * @return String
+     */
+    @JsonIgnore
+    public static String buildUniqueId(String routeSlug, String stopCode) {
+        return routeSlug + "/" + stopCode;
     }
     
     @JsonIgnore
