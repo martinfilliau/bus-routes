@@ -1,9 +1,8 @@
 package com.martinfilliau.busroutes.resources;
 
-import com.martinfilliau.busroutes.bo.StopOnRoute;
+import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.graph.GraphService;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,39 +12,32 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 
 /**
  *
  * @author martinfilliau
  */
-@Path("/bus")
+@Path("/stop")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class BusResource {
+public class StopResource {
  
     private final GraphService graph;
 
-    public BusResource(GraphDatabaseService service) {
+    public StopResource(GraphDatabaseService service) {
         this.graph = new GraphService(service);
     }
     
     @GET
     @Path("search")
-    public List<StopOnRoute> searchStops(@QueryParam("code") String code, @QueryParam("name") String name) {
-        List<StopOnRoute> stops = new ArrayList<StopOnRoute>();
-        Iterator<Node> i;
+    public List<Stop> searchStops(@QueryParam("code") String code, @QueryParam("name") String name) {
+        List<Stop> stops = new ArrayList<Stop>();
         if (code != null) {
-            i = this.graph.getStopsByCode(code);
+            stops = this.graph.getStopsByCode(code);
         } else if (name != null) {
-            i = this.graph.searchStopsByName(name);
+            stops = this.graph.searchStopsByName(name);
         } else {
             throw new WebApplicationException(400);
-        }
-        Node n;
-        while (i.hasNext()) {
-            n = i.next();
-            stops.add(new StopOnRoute(n));
         }
         return stops;
     }

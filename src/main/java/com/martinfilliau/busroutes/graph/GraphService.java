@@ -3,7 +3,9 @@ package com.martinfilliau.busroutes.graph;
 import com.martinfilliau.busroutes.bo.RelTypes;
 import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.bo.StopOnRoute;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
@@ -113,8 +115,8 @@ public class GraphService {
      * @param code to search
      * @return Iterator<Node>
      */
-    public Iterator<Node> getStopsByCode(String code) {
-        return this.stopsOnRouteIndex.get(Stop.STOP_CODE, code).iterator();
+    public List<Stop> getStopsByCode(String code) {
+        return nodesToStops(this.stopsOnRouteIndex.get(Stop.STOP_CODE, code).iterator());
     }
     
     /**
@@ -122,8 +124,21 @@ public class GraphService {
      * @param name to search
      * @return Iterator<Node>
      */
-    public Iterator<Node> searchStopsByName(String name) {
-        return this.stopsOnRouteIndex.query(Stop.STOP_NAME, name).iterator();
+    public List<Stop> searchStopsByName(String name) {
+        return nodesToStops(this.stopsOnRouteIndex.query(Stop.STOP_NAME, name).iterator());
+    }
+    
+    /**
+     * Get a list of Stop from an Iterator<Node>
+     * @param nodes Iterator<Node>
+     * @return list of stops
+     */
+    public List<Stop> nodesToStops(Iterator<Node> nodes) {
+        List<Stop> stops = new ArrayList<Stop>();
+        while(nodes.hasNext()) {
+            stops.add(new Stop(nodes.next()));
+        }
+        return stops;
     }
     
     /**
