@@ -2,7 +2,11 @@ package com.martinfilliau.busroutes.bo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 
 /**
@@ -56,6 +60,18 @@ public class Stop {
         this.code = code;
     }
 
+    @JsonProperty
+    public List<StopOnRoute> getStopsOnRoute() {
+        List<StopOnRoute> routes = new ArrayList<StopOnRoute>();
+        Relationship rel;
+        Iterator<Relationship> it = this.node.getRelationships(RelTypes.STOP).iterator();
+        while(it.hasNext()) {
+            rel = it.next();
+            routes.add(new StopOnRoute(rel.getEndNode()));
+        }
+        return routes;
+    }
+    
     @Override
     public String toString() {
         return this.name + " (" + this.code + ")";
