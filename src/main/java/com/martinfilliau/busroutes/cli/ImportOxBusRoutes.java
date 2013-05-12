@@ -10,8 +10,6 @@ import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
 import java.io.FileReader;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.json.simple.JSONArray;
@@ -36,9 +34,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     private GraphService graph;
     
     private HashMap<String, Route> routesAvailable = new HashMap<String, Route>();
-    
-    private HashMap<String, Set<String>> stopsAvailable = new HashMap<String, Set<String>>();
-    
+        
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
     }
@@ -54,7 +50,6 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         JSONArray stops = (JSONArray) root.get("stops");
         doRoutes(routes);
         doStopsOnRoutes(stops);
-        doStops();
     }
 
     private void doRoutes(JSONArray routes) {
@@ -100,9 +95,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     stopCode = (String) stop.get("code");
                     stopNode = graph.getOrCreateStop(stopCode);
                     st = new Stop(stopNode);
-                    st.setName((String) stop.get("name"));
-                    st.setCode(stopCode);
-                    st.setNodeProperties(st, graph.getStopsIndex());
+                    st.setNodeProperties((String) stop.get("name"), graph.getStopsIndex());
                     
                     id = StopOnRoute.buildUniqueId(slug, st.getCode());
                     n = graph.getOrCreateStopOnRoute(id);
@@ -113,13 +106,7 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
                     }
                     previousId = n.getId();
                     
-                    if(stopsAvailable.containsKey(st.getCode())) {
-                        stopsAvailable.get(st.getCode()).add(id);
-                    } else {
-                        Set<String> stopOnRoutesSet = new HashSet<String>();
-                        stopOnRoutesSet.add(id);
-                        stopsAvailable.put(st.getCode(), stopOnRoutesSet);
-                    }
+                    stopNode.createRelationshipTo(n, RelTypes.STOP);
                 }
             }
             tx.success();
@@ -130,28 +117,6 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
         }
     }
     
-    private void doStops() {
-        Node stop;
-        Node onRoute;
-        Set<String> stopOnRoutes;
-        Transaction tx = service.beginTx();
-        try {
-            for(Map.Entry<String, Set<String>> e : stopsAvailable.entrySet()) {
-                stop = this.graph.getStop(e.getKey());
-                stopOnRoutes = e.getValue();
-                for(String s : stopOnRoutes) {
-                    onRoute = this.graph.getStopOnRoute(s);
-                    stop.createRelationshipTo(onRoute, RelTypes.STOP);
-                }
-            }
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Error in importing stops", e);
-        } finally {
-            tx.finish();
-        }
-    }
-
     private static void shutdown()
     {
         service.shutdown();
