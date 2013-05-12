@@ -6,6 +6,7 @@ import com.martinfilliau.busroutes.bo.Stop;
 import com.martinfilliau.busroutes.bo.StopOnRoute;
 import com.martinfilliau.busroutes.config.MainConfig;
 import com.martinfilliau.busroutes.graph.GraphService;
+import com.martinfilliau.busroutes.importers.OxonTimeImporter;
 import com.yammer.dropwizard.cli.ConfiguredCommand;
 import com.yammer.dropwizard.config.Bootstrap;
 import java.io.FileReader;
@@ -28,13 +29,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ImportOxBusRoutes.class);
-
     private static GraphDatabaseService service;
-    private GraphService graph;
     
-    private HashMap<String, Route> routesAvailable = new HashMap<String, Route>();
-        
     public ImportOxBusRoutes() {
         super("import", "Import Ox Bus Routes from JSON file");
     }
@@ -42,81 +38,13 @@ public class ImportOxBusRoutes extends ConfiguredCommand<MainConfig> {
     @Override
     protected void run(Bootstrap<MainConfig> bootstrap, Namespace namespace, MainConfig configuration) throws Exception {
         service = new GraphDatabaseFactory().newEmbeddedDatabase(configuration.getNeoPath());
-        graph = new GraphService(service);
+        OxonTimeImporter oti = new OxonTimeImporter(service);
         registerShutdownHook();
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject) parser.parse(new FileReader(configuration.getImportOx()));
-        JSONArray routes = (JSONArray) root.get("routes");
-        JSONArray stops = (JSONArray) root.get("stops");
-        doRoutes(routes);
-        doStopsOnRoutes(stops);
+        oti.run(root);
     }
 
-    private void doRoutes(JSONArray routes) {
-        JSONObject route;
-        Route r;
-        String slug;
-        for (Object o : routes) {
-            route = (JSONObject) o;
-            slug = (String) route.get("slug");
-            r = new Route();
-            r.setName((String) route.get("name"));
-            r.setId((String) route.get("id"));
-            r.setOperator((String) route.get("operator"));
-            r.setSlug(slug);
-            routesAvailable.put(slug, r);
-            LOGGER.info("Found route " + slug);
-        }
-    }
-
-    private void doStopsOnRoutes(JSONArray s) {
-        JSONArray stops;
-        JSONObject route;
-        String slug;
-        JSONObject stop;
-        Node n;
-        String id;
-        Long previousId;
-        Route currentRoute;
-        StopOnRoute stopOnRoute;
-        Stop st;
-        String stopCode;
-        Node stopNode;
-        Transaction tx = service.beginTx();
-        try {
-            for (Object o : s) {
-                route = (JSONObject) o;
-                slug = (String) route.get("route");
-                currentRoute = routesAvailable.get(slug);
-                stops = (JSONArray) route.get("stops");
-                previousId = null;
-                for (Object obj : stops) {
-                    stop = (JSONObject) obj;
-                    stopCode = (String) stop.get("code");
-                    stopNode = graph.getOrCreateStop(stopCode);
-                    st = new Stop(stopNode);
-                    st.setNodeProperties((String) stop.get("name"), graph.getStopsIndex());
-                    
-                    id = StopOnRoute.buildUniqueId(slug, st.getCode());
-                    n = graph.getOrCreateStopOnRoute(id);
-                    stopOnRoute = new StopOnRoute(n);
-                    stopOnRoute.setNodeProperties(st, currentRoute, graph.getStopsOnRouteIndex());
-                    if(previousId != null) {
-                        graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
-                    }
-                    previousId = n.getId();
-                    
-                    stopNode.createRelationshipTo(n, RelTypes.STOP);
-                }
-            }
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Error in importing stops on routes", e);
-        } finally {
-            tx.finish();
-        }
-    }
-    
     private static void shutdown()
     {
         service.shutdown();
