@@ -97,14 +97,33 @@ public class GraphService {
      * @param nodeStart UID of the start node
      * @param nodeEnd UID of the end node
      */
-    public void addRouteRelation(String nodeStart, String nodeEnd) {
+    public void addRouteRelation(long nodeStart, long nodeEnd) {
+        addUniqueRelation(nodeStart, nodeEnd, RelTypes.ROUTE.name());
+    }
+    
+    /**
+     * Add a relation between a Stop and a StopOnRoute
+     * @param stop Stop ID
+     * @param onRoute StopOnRoute ID
+     */
+    public void addStopToOnRouteRelation(long stop, long onRoute) {
+        addUniqueRelation(stop, onRoute, RelTypes.STOP.name());
+    } 
+    
+    /**
+     * Do a Cypher query to create an unique relation between two nodes
+     * @param nodeStart ID of the start node
+     * @param nodeEnd ID of the end node
+     * @param relName name of the relation
+     */
+    private void addUniqueRelation(long nodeStart, long nodeEnd, String relName) {
         StringBuilder sb = new StringBuilder();
         sb.append("START a=node(")
-                .append(nodeStart)
+                .append(Long.toString(nodeStart))
                 .append("), b=node(")
-                .append(nodeEnd)
+                .append(Long.toString(nodeEnd))
                 .append(") CREATE UNIQUE a-[r:")
-                .append(RelTypes.ROUTE.name())
+                .append(relName)
                 .append("]->b");
         LOGGER.info("Query: " + sb.toString());
         this.engine.execute(sb.toString());

@@ -68,46 +68,44 @@ public class OxonTimeImporter {
      * Handles the stops on routes
      * @param s list of routes
      */
-    private void doStopsOnRoutes(JSONArray s) {
-        JSONArray stops;
-        JSONObject route;
-        String slug;
-        JSONObject stop;
-        Node n;
-        String id;
-        Long previousId;
+    private void doStopsOnRoutes(JSONArray routes) {
+        JSONArray jsonStops;
+        JSONObject jsonRoute;
+        String routeSlug;
+        JSONObject jsonStop;
+        Node nodeOnRoute;
+        String onRouteId;
+        Long previousNodeId;
         Route currentRoute;
         StopOnRoute stopOnRoute;
-        Stop st;
-        String stopCode;
-        Node stopNode;
+        Stop stop;
+        Node nodeStop;
         Transaction tx = service.beginTx();
         try {
             // for each route
-            for (Object o : s) {
-                route = (JSONObject) o;
-                slug = (String) route.get("route");
-                currentRoute = routesAvailable.get(slug);
-                stops = (JSONArray) route.get("stops");
-                previousId = null;
+            for (Object route : routes) {
+                jsonRoute = (JSONObject) route;
+                routeSlug = (String) jsonRoute.get("route");
+                currentRoute = routesAvailable.get(routeSlug);
+                jsonStops = (JSONArray) jsonRoute.get("stops");
+                previousNodeId = null;
                 // for each stop in one route
-                for (Object obj : stops) {
-                    stop = (JSONObject) obj;
-                    stopCode = (String) stop.get("code");
-                    stopNode = graph.getOrCreateStop(stopCode);
-                    st = new Stop(stopNode);
-                    st.setNodeProperties((String) stop.get("name"), graph.getStopsIndex());
+                for (Object obj : jsonStops) {
+                    jsonStop = (JSONObject) obj;
+                    nodeStop = graph.getOrCreateStop((String) jsonStop.get("code"));
+                    stop = new Stop(nodeStop);
+                    stop.setNodeProperties((String) jsonStop.get("name"), graph.getStopsIndex());
                     
-                    id = StopOnRoute.buildUniqueId(slug, st.getCode());
-                    n = graph.getOrCreateStopOnRoute(id);
-                    stopOnRoute = new StopOnRoute(n);
-                    stopOnRoute.setNodeProperties(st, currentRoute, graph.getStopsOnRouteIndex());
-                    if(previousId != null) {
-                        graph.addRouteRelation(previousId.toString(), Long.toString(n.getId()));
+                    onRouteId = StopOnRoute.buildUniqueId(routeSlug, stop.getCode());
+                    nodeOnRoute = graph.getOrCreateStopOnRoute(onRouteId);
+                    stopOnRoute = new StopOnRoute(nodeOnRoute);
+                    stopOnRoute.setNodeProperties(stop, currentRoute, graph.getStopsOnRouteIndex());
+                    if(previousNodeId != null) {
+                        graph.addRouteRelation(previousNodeId, nodeOnRoute.getId());
                     }
-                    previousId = n.getId();
+                    previousNodeId = nodeOnRoute.getId();
                     
-                    stopNode.createRelationshipTo(n, RelTypes.STOP);
+                    graph.addStopToOnRouteRelation(nodeStop.getId(), nodeOnRoute.getId());
                 }
             }
             tx.success();
@@ -117,6 +115,4 @@ public class OxonTimeImporter {
             tx.finish();
         }
     }
-    
-    
 }
