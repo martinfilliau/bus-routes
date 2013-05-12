@@ -16,7 +16,7 @@ Run the following command to start the server:
 
 Try the following queries:
 
-    curl "http://127.0.0.1:8080/bus/search?name=aldate's"
+    curl "http://127.0.0.1:8080/stop/search?name=aldate's"
     curl "http://127.0.0.1:8080/route/search?start=69323797&end=69326475"
 
 Strategies
