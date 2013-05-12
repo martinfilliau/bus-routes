@@ -1,4 +1,5 @@
 *.class
 target/
 neo-data/
+nbactions.xml
 
