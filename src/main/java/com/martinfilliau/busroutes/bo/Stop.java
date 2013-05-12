@@ -32,8 +32,8 @@ public class Stop {
         node = n;
     }
     
-    public void setNodeProperties(Stop stop, Index<Node> index) {
-        this.node.setProperty(STOP_NAME, stop.getName());
+    public void setNodeProperties(String name, Index<Node> index) {
+        this.node.setProperty(STOP_NAME, name);
         index.add(node, STOP_NAME, name);
     }
 
@@ -44,36 +44,32 @@ public class Stop {
     
     @JsonProperty
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return (String) this.node.getProperty(Stop.STOP_NAME);
     }
 
     @JsonProperty
     public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
+        return (String) this.node.getProperty(Stop.STOP_CODE);
     }
 
     @JsonProperty
     public List<StopOnRoute> getStopsOnRoute() {
-        List<StopOnRoute> routes = new ArrayList<StopOnRoute>();
-        Relationship rel;
-        Iterator<Relationship> it = this.node.getRelationships(RelTypes.STOP).iterator();
-        while(it.hasNext()) {
-            rel = it.next();
-            routes.add(new StopOnRoute(rel.getEndNode()));
+        if(this.node != null) {
+            List<StopOnRoute> routes = new ArrayList<StopOnRoute>();
+            Relationship rel;
+            Iterator<Relationship> it = this.node.getRelationships(RelTypes.STOP).iterator();
+            while(it.hasNext()) {
+                rel = it.next();
+                routes.add(new StopOnRoute(rel.getEndNode()));
+            }
+            return routes;            
+        } else {
+            return null;
         }
-        return routes;
     }
     
     @Override
     public String toString() {
-        return this.name + " (" + this.code + ")";
+        return this.getName() + " (" + this.getCode() + ")";
     }
 }

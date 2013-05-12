@@ -54,11 +54,13 @@ public class StopOnRoute {
     }
     
     @JsonProperty
-    public Stop getStop() {
-        Stop s = new Stop();
-        s.setName((String) this.node.getProperty(Stop.STOP_NAME));
-        s.setCode((String) this.node.getProperty(Stop.STOP_CODE));
-        return s;
+    public String getStopName() {
+        return (String) this.node.getProperty(Stop.STOP_NAME);
+    }
+    
+    @JsonProperty
+    public String getStopCode() {
+        return (String) this.node.getProperty(Stop.STOP_CODE);
     }
     
     @JsonProperty

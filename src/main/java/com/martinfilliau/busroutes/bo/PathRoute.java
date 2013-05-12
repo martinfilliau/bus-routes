@@ -24,8 +24,6 @@ public class PathRoute {
         steps = new ArrayList<StopOnRoute>();
         start = (String) path.startNode().getProperty(Stop.STOP_NAME);
         end = (String) path.endNode().getProperty(Stop.STOP_NAME);
-        Stop s;
-        StopOnRoute sr;
         for(Relationship rel : path.relationships()) {
             if(isStopOnRoute(rel.getStartNode())) {
                 steps.add(new StopOnRoute(rel.getStartNode()));
