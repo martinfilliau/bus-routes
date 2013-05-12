@@ -21,8 +21,6 @@ import org.neo4j.kernel.Traversal;
  * @author martinfilliau
  */
 @Path("/route")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public class RoutesResource {
 
     private final GraphService graph;
@@ -32,21 +30,36 @@ public class RoutesResource {
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("search")
     public List<PathRoute> searchRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
+        Iterable<org.neo4j.graphdb.Path> paths = this.getPaths(start, end);
+        List<PathRoute> routes = new ArrayList<PathRoute>();
+        for (org.neo4j.graphdb.Path p : paths) {
+            routes.add(new PathRoute(p));
+        }
+        return routes;
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("explain")
+    public String explainRoutes(@QueryParam("start") String start, @QueryParam("end") String end) {
+        Iterable<org.neo4j.graphdb.Path> paths = this.getPaths(start, end);
+        RoutePathPrinter printer = new RoutePathPrinter();
+        StringBuilder sb = new StringBuilder();
+        for (org.neo4j.graphdb.Path p : paths) {
+            sb.append(Traversal.pathToString(p, printer)).append("\n");
+        }
+        return sb.toString();
+    }
+    
+    private Iterable<org.neo4j.graphdb.Path> getPaths(String start, String end) throws WebApplicationException {
         Node s = this.graph.getStop(start);
         Node e = this.graph.getStop(end);
         if (s == null || e == null) {
             throw new WebApplicationException(400);
         }
-        Iterable<org.neo4j.graphdb.Path> paths = this.graph.getRoutes(s, e);
-        RoutePathPrinter printer = new RoutePathPrinter();
-        StringBuilder sb = new StringBuilder();
-        List<PathRoute> routes = new ArrayList<PathRoute>();
-        for (org.neo4j.graphdb.Path p : paths) {
-            routes.add(new PathRoute(p));
-            //sb.append(Traversal.pathToString(p, printer)).append("\n");
-        }
-        return routes;
+        return this.graph.getRoutes(s, e);
     }
 }
