@@ -32,6 +32,10 @@ public class OxonTimeImporter {
         graph = new GraphService(gds);
     }
     
+    /**
+     * Run the importer with the given JSON object
+     * @param root JSON object to import
+     */
     public void run(JSONObject root) {
         JSONArray routes = (JSONArray) root.get("routes");
         JSONArray stops = (JSONArray) root.get("stops");
@@ -39,6 +43,10 @@ public class OxonTimeImporter {
         doStopsOnRoutes(stops);
     }
     
+    /**
+     * Handles the bus routes
+     * @param routes list of JSON objects
+     */
     private void doRoutes(JSONArray routes) {
         JSONObject route;
         Route r;
@@ -56,6 +64,10 @@ public class OxonTimeImporter {
         }
     }
 
+    /**
+     * Handles the stops on routes
+     * @param s list of routes
+     */
     private void doStopsOnRoutes(JSONArray s) {
         JSONArray stops;
         JSONObject route;
@@ -71,12 +83,14 @@ public class OxonTimeImporter {
         Node stopNode;
         Transaction tx = service.beginTx();
         try {
+            // for each route
             for (Object o : s) {
                 route = (JSONObject) o;
                 slug = (String) route.get("route");
                 currentRoute = routesAvailable.get(slug);
                 stops = (JSONArray) route.get("stops");
                 previousId = null;
+                // for each stop in one route
                 for (Object obj : stops) {
                     stop = (JSONObject) obj;
                     stopCode = (String) stop.get("code");
